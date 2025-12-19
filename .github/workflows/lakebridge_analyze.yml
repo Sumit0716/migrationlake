@@ -18,7 +18,7 @@ on:
       source_tech:
         description: "Source tech"
         required: true
-        default: "INFORMATICA"
+        default: "Informatica - PC"
 
 jobs:
   analyze:
