@@ -1,0 +1,47 @@
+name: Lakebridge Analyze
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_directory:
+        description: "Repo-relative path containing legacy ETL export/project"
+        required: true
+        default: "etl-migration-mvp"
+      report_file:
+        description: "Repo-relative output XLSX path"
+        required: true
+        default: "outputs/analysis.xlsx"
+      source_tech:
+        description: "Source technology"
+        required: true
+        default: "INFORMATICA"
+
+jobs:
+  analyze:
+    # Best if you use a Windows self-hosted runner because you already run on Windows
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create output folder
+        shell: pwsh
+        run: |
+          $out = "${{ github.event.inputs.report_file }}"
+          $dir = Split-Path $out
+          if (!(Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
+
+      - name: Run Lakebridge analyze
+        shell: pwsh
+        run: |
+          databricks labs lakebridge analyze `
+            --source-directory "${{ github.event.inputs.source_directory }}" `
+            --report-file "${{ github.event.inputs.report_file }}" `
+            --source-tech "${{ github.event.inputs.source_tech }}"
+
+      - name: Upload XLSX as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lakebridge-analysis
+          path: ${{ github.event.inputs.report_file }}
