@@ -1,0 +1,101 @@
+# See https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms
+# and https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
+name: Bug Report
+description: Something is not working in Lakebridge
+title: "[BUG]: "
+labels: ["needs-triage"]
+type: "bug"
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered.
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category of Bug / Issue
+      description: Please select the category that best describes the bug / issue you are reporting.
+      options:
+        - Application crashed
+        - Profiler bug
+        - Analyzer bug
+        - Converter bug
+        - Reconcile bug
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Current Behavior
+      description: |
+        A concise description of what you're experiencing.
+        **Do not paste links to attachments with logs and/or images, as all issues with attachments will get deleted.**
+        Use the `Relevant log output` field to paste redacted log output without personal identifying information (PII).
+        You can Ctrl/Cmd+V the screenshot, which would appear as a rendered image if it doesn't contain any PII.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A concise description of what you expected to happen.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. In this environment...
+        1. With this config...
+        1. Run '...'
+        1. See error...
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output or Exception details
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: checkboxes
+    attributes:
+      label: Logs Confirmation
+      description: Additional logs will helps us, Please confirm the following regarding logs. Please ensure you have redacted any personal identifying information (PII) from the logs.
+      options:
+        - label: I ran the command line with `--debug`
+          required: false
+        - label: I have attached the `lsp-server.log` under USER_HOME/.databricks/labs/remorph-transpilers/<converter_name>/lib/lsp-server.log
+          required: false
+
+  - type: textarea
+    id: query
+    attributes:
+      label: Sample Query
+      description: Please copy and paste anonymized Query. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Which operating system do you have Remorph installed on?
+      options:
+        - macOS
+        - Linux
+        - Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of our software are you running?
+      options:
+        - latest via Databricks CLI
+        - other
+      default: 0
+    validations:
+      required: true

@@ -1,0 +1,123 @@
+---
+name: lakebridge
+description: Code Transpiler and Data Reconciliation tool for Accelerating Data onboarding to Databricks from EDW, CDW and other ETL sources.
+install:
+  script: src/databricks/labs/lakebridge/base_install.py
+uninstall:
+  script: src/databricks/labs/lakebridge/uninstall.py
+entrypoint: src/databricks/labs/lakebridge/cli.py
+min_python: 3.10
+commands:
+  - name: analyze
+    description: Analyze existing non-Databricks database or ETL sources
+    flags:
+      - name: source-directory
+        description: (Optional) Local filesystem `path` of a directory containing sources to analyze
+      - name: report-file
+        description: (Optional) Local filesystem `path` of the analysis report file to write
+      - name: source-tech
+        description: (Optional) The technology/platform of the sources to analyze
+
+  - name: transpile
+    description: Transpile SQL/ETL sources to Databricks-compatible code
+    flags:
+      - name: transpiler-config-path
+        description: (Optional) Local `path` to the configuration file of the transpiler to use for conversion
+      - name: source-dialect
+        description: (Optional) The source dialect to use when performing conversion
+      - name: overrides-file
+        description: (Optional) Local `path` of a file containing transpiler overrides, if supported by the transpiler in use
+      - name: target-technology
+        description: (Optional) Target technology to use for code generation, if supported by the transpiler in use
+      - name: input-source
+        description: (Optional) Local `path` of the sources to be convert
+      - name: output-folder
+        description: (Optional) Local `path` where converted code will be written
+      - name: error-file-path
+        description: (Optional) Local `path` where a log of conversion errors (if any) will be written
+      - name: skip-validation
+        description: (Optional) Whether to skip validating the output ('true') after conversion or not ('false')
+      - name: catalog-name
+        description: (Optional) Catalog `name`, only used when validating converted code
+      - name: schema-name
+        description: (Optional) Schema `name`, only used when validating converted code
+    table_template: |-
+      total_files_processed\ttotal_queries_processed\tanalysis_error_count\tparsing_error_count\tvalidation_error_count\tgeneration_error_count\terror_log_file
+      {{range .}}{{.total_files_processed}}\t{{.total_queries_processed}}\t{{.analysis_error_count}}\t{{.parsing_error_count}}\t{{.validation_error_count}}\t{{.generation_error_count}}\t{{.error_log_file}}
+      {{end}}
+
+  - name: llm-transpile
+    description: Transpile SQL/ETL sources to Databricks using LLM-based conversion (EXPERIMENTAL)
+    flags:
+      - name: accept-terms
+        description: Whether to accept the terms for using LLM-based transpilation (`true|false`).
+      - name: input-source
+        description: Local `path` of the sources to be convert
+      - name: output-ws-folder
+        description: Output `path` where converted code will be written in the workspace. (Must start with '/Workspace/'.)
+      - name: source-dialect
+        description: The source dialect to use when performing conversion
+      - name: catalog-name
+        description: Databricks Catalog `name` to use. (Must already exist and have permissions.)
+      - name: schema-name
+        description: Databricks Schema `name` to use. (Must already exist and have permissions.)
+      - name: volume
+        description: Databricks UC Volume `name` for staging sources to convert. (Must already exist and have permissions.)
+      - name: foundation-model
+        description: The Foundation Model to use for conversion. (Must be available via the Databricks Model Serving Endpoint.)
+
+  - name: reconcile
+    description: Reconcile source and target data residing on Databricks
+
+  - name: aggregates-reconcile
+    description: Reconcile source and target data residing on Databricks using aggregated metrics
+
+  - name: configure-database-profiler
+    description: (Experimental) Configure database profiler
+
+  - name: create-profiler-dashboard
+    description: (Experimental) Upload the profiler results as a Databricks dashboard.
+    flags:
+      - name: extract-file
+        description: Path Location of the Profiler Extract File
+      - name: source-tech
+        description: Name of the Source System Technology that was Profiled
+      - name: volume-path
+        description: Unity Catalog Volume to upload the profiler extract
+      - name: catalog-name
+        description: (Optional) Name of the Catalog that extract data will be uploaded to
+      - name: schema-name
+        description: (Optional) Name of the Schema that the extract tables will be uploaded to
+
+  - name: install-transpile
+    description: Install & optionally configure 'transpile' dependencies
+    flags:
+      - name: artifact
+        description: (Optional) Local `path` to a transpiler artifact to install instead of the default transpilers.
+      - name: interactive
+        description: (Optional) Whether installing in interactive mode (`true|false|auto`); configuration settings are prompted for when interactive
+        default: auto
+      - name: include-llm-transpiler
+        description: (Optional) Whether to include LLM-based transpiler in installation (`true|false`)
+        default: "false"
+
+  - name: describe-transpile
+    description: Describe installed transpilers
+    table_template: |-
+      Transpiler\tInstalled Version\tPlugin Configuration
+      ==========\t=================\t====================
+      {{range (index . "installed-transpilers")}}{{ .name }}\t{{(or .versions.installed "<unknown>")}}\t{{ index . "config-path" }}
+      {{end}}
+      Supported Source Dialects
+      =========================
+      {{range (index . "available-dialects")}} - {{ . }}
+      {{end}}
+
+  - name: configure-reconcile
+    description: Configure 'reconcile' dependencies
+
+  - name: execute-database-profiler
+    description: (Experimental) Profile the source system database
+    flags:
+      - name: source-tech
+        description: (Optional) The technology/platform of the sources to Profile
