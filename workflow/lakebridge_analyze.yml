@@ -6,7 +6,7 @@ on:
       source_directory:
         description: "Repo-relative path containing legacy ETL export/project"
         required: true
-        default: "etl-migration-mvp"
+        default: "migrationlake"
       report_file:
         description: "Repo-relative output XLSX path"
         required: true
