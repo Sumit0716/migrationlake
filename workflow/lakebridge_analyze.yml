@@ -3,29 +3,38 @@ name: Lakebridge Analyze
 on:
   workflow_dispatch:
     inputs:
+      profile_name:
+        description: "Databricks CLI profile to use"
+        required: true
+        default: "MigrationLake"
       source_directory:
-        description: "Repo-relative path containing legacy ETL export/project"
+        description: "Repo-relative path to ETL project/export"
         required: true
         default: "migrationlake"
       report_file:
-        description: "Repo-relative output XLSX path"
+        description: "Repo-relative output xlsx"
         required: true
         default: "outputs/analysis.xlsx"
       source_tech:
-        description: "Source technology"
+        description: "Source tech"
         required: true
         default: "INFORMATICA"
 
 jobs:
   analyze:
-    # Best if you use a Windows self-hosted runner because you already run on Windows
     runs-on: self-hosted
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create output folder
+      - name: Validate Databricks auth
+        shell: pwsh
+        run: |
+          databricks auth profiles
+          databricks clusters list --profile "${{ github.event.inputs.profile_name }}"
+
+      - name: Ensure output folder
         shell: pwsh
         run: |
           $out = "${{ github.event.inputs.report_file }}"
@@ -36,11 +45,12 @@ jobs:
         shell: pwsh
         run: |
           databricks labs lakebridge analyze `
+            --profile "${{ github.event.inputs.profile_name }}" `
             --source-directory "${{ github.event.inputs.source_directory }}" `
             --report-file "${{ github.event.inputs.report_file }}" `
             --source-tech "${{ github.event.inputs.source_tech }}"
 
-      - name: Upload XLSX as artifact
+      - name: Upload XLSX artifact
         uses: actions/upload-artifact@v4
         with:
           name: lakebridge-analysis
