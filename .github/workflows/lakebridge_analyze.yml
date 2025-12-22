@@ -51,7 +51,7 @@ jobs:
             --source-tech "${{ github.event.inputs.source_tech }}"
 
       - name: Upload XLSX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: lakebridge-analysis
           path: ${{ github.event.inputs.report_file }}
